@@ -1,0 +1,58 @@
+%%{init: {"theme": "dark"}}%%
+graph TB
+  linkStyle default color:#dddddd
+
+  subgraph diagram ["Component View: FHEVM Solana host - Shared protocol crates"]
+    style diagram fill:#191919,stroke:#191919
+
+    39["<div style='font-weight: bold'>Coprocessor</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Zama's FHE compute network.</div>"]
+    click 39 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine"
+    style 39 fill:#c8c8c8,stroke:#888888,color:#333333
+    48["<div style='font-weight: bold'>relayer-http</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Decryption relayer.</div>"]
+    click 48 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http"
+    style 48 fill:#c8c8c8,stroke:#888888,color:#333333
+    50["<div style='font-weight: bold'>KMS connector</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>One per KMS party. The<br />decrypt-authorization<br />authority.</div>"]
+    click 50 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector"
+    style 50 fill:#c8c8c8,stroke:#888888,color:#333333
+
+    subgraph 4 ["FHEVM Solana host"]
+      style 4 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+      subgraph 22 ["Shared protocol crates"]
+        style 22 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+        23["<div style='font-weight: bold'>zama-solana-acl</div><div style='font-size: 70%; margin-top: 0px'>[Component: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>EncryptedStore layout and PDA<br />seeds, MMR history, leaf<br />commitments,<br />decrypt-authorization rules,<br />host chain-id rules.</div>"]
+        click 23 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-acl "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-acl"
+        style 23 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        24["<div style='font-weight: bold'>zama-solana-permit</div><div style='font-size: 70%; margin-top: 0px'>[Component: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>Canonical user-decrypt<br />permit: strict decoding,<br />canonical text, sRFC 38<br />envelope, Ed25519<br />verification.</div>"]
+        click 24 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-permit "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-permit"
+        style 24 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        25["<div style='font-weight: bold'>zama-solana-request</div><div style='font-size: 70%; margin-top: 0px'>[Component: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>Typed user-decrypt request<br />and its form rules.</div>"]
+        click 25 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-request "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-request"
+        style 25 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        26["<div style='font-weight: bold'>zama-solana-transaction</div><div style='font-size: 70%; margin-top: 0px'>[Component: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>Provider-independent<br />resolution of compiled<br />transaction instructions.</div>"]
+        click 26 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-transaction "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-transaction"
+        style 26 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        27["<div style='font-weight: bold'>zama-solana-merkle-proofs</div><div style='font-size: 70%; margin-top: 0px'>[Component: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>Wire types of the Merkle<br />proof service: CBOR bodies,<br />JSON errors.</div>"]
+        click 27 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-merkle-proofs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-solana-merkle-proofs"
+        style 27 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      end
+
+      5["<div style='font-weight: bold'>zama-host</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Protocol host program:<br />encrypted stores and their<br />ACL/MMR, fhe_execute, input<br />attestations, public-decrypt<br />verification, KMS contexts,<br />HCU metering.</div>"]
+      click 5 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host"
+      style 5 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+    end
+
+    39-. "<div>Resolves compiled<br />instructions with</div><div style='font-size: 70%'></div>" .->26
+    39-. "<div>Uses chain-id rules from</div><div style='font-size: 70%'></div>" .->23
+    39-. "<div>Serves proofs in the format<br />of</div><div style='font-size: 70%'></div>" .->27
+    48-. "<div>Forwards decryption requests<br />to</div><div style='font-size: 70%'>[HTTPS]</div>" .->50
+    48-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->25
+    48-. "<div>Decodes permits with</div><div style='font-size: 70%'></div>" .->24
+    50-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->25
+    50-. "<div>Verifies permits with</div><div style='font-size: 70%'></div>" .->24
+    50-. "<div>Authorizes decryption with</div><div style='font-size: 70%'></div>" .->23
+    50-. "<div>Fetches MMR inclusion proofs<br />from</div><div style='font-size: 70%'>[HTTP, CBOR]</div>" .->39
+    5-. "<div>Layout, seeds and MMR from</div><div style='font-size: 70%'></div>" .->23
+
+  end

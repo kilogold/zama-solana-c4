@@ -1,0 +1,74 @@
+%%{init: {"theme": "dark"}}%%
+graph TB
+  linkStyle default color:#dddddd
+
+  subgraph diagram ["Component View: FHEVM Solana host - zama-host"]
+    style diagram fill:#191919,stroke:#191919
+
+    2["<div style='font-weight: bold'>Host operator</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>zama-host admin and pausers.<br />Can be a program-controlled<br />signer such as a Squads<br />vault.</div>"]
+    style 2 fill:#c8c8c8,stroke:#888888,color:#333333
+
+    subgraph 4 ["FHEVM Solana host"]
+      style 4 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+      subgraph 5 ["zama-host"]
+        style 5 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+        10["<div style='font-weight: bold'>Input verification</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/input_verification.rs]</div><div style='font-size: 80%; margin-top:10px'>Verifies the coprocessors'<br />threshold secp256k1<br />attestation of an external<br />input.</div>"]
+        click 10 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/input_verification.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/input_verification.rs"
+        style 10 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        11["<div style='font-weight: bold'>HCU metering</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/fhe_execute/hcu, block_cap.rs, state/hcu_*.rs]</div><div style='font-size: 80%; margin-top:10px'>Per-transaction HCU and depth<br />caps, and the per-application<br />block meter.</div>"]
+        click 11 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute/hcu "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute/hcu"
+        style 11 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        12["<div style='font-weight: bold'>Event transport</div><div style='font-size: 70%; margin-top: 0px'>[Component: fhe_execute/event_transport.rs, events.rs, event_cpi.rs]</div><div style='font-size: 80%; margin-top:10px'>Emits one FheExecutedEvent<br />per execution through Anchor<br />event CPI.</div>"]
+        click 12 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute/event_transport.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute/event_transport.rs"
+        style 12 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        13["<div style='font-weight: bold'>User-decrypt authorization</div><div style='font-size: 70%; margin-top: 0px'>[Component: state/user_decryption_delegation.rs, state/permit_invalidation.rs]</div><div style='font-size: 80%; margin-top:10px'>delegate_for_user_decryption,<br />revoke_delegation_for_user_decryption,<br />revoke_permits.</div>"]
+        click 13 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/user_decryption_delegation.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/user_decryption_delegation.rs"
+        style 13 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        14["<div style='font-weight: bold'>Public-decrypt verification</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/verify_public_decrypt.rs, eip712.rs]</div><div style='font-size: 80%; margin-top:10px'>verify_public_decrypt: checks<br />a KMS certificate against the<br />KMS context it names.</div>"]
+        click 14 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/verify_public_decrypt.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/verify_public_decrypt.rs"
+        style 14 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        15["<div style='font-weight: bold'>KMS contexts</div><div style='font-size: 70%; margin-top: 0px'>[Component: state/kms_context.rs]</div><div style='font-size: 80%; margin-top:10px'>define_kms_context,<br />define_kms_epoch,<br />destroy_kms_context.</div>"]
+        click 15 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/kms_context.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/kms_context.rs"
+        style 15 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        6["<div style='font-weight: bold'>Host administration</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/*.rs, state/host_config.rs]</div><div style='font-size: 80%; margin-top:10px'>initialize_host_config,<br />set_admin/accept_admin,<br />pause/unpause/set_pauser,<br />set_coprocessor_signers,<br />set_deny_scope,<br />set_grant_deny_list_enabled,<br />HCU limits.</div>"]
+        click 6 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions"
+        style 6 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        7["<div style='font-weight: bold'>Transient store</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/transient.rs, state/transient.rs]</div><div style='font-size: 80%; margin-top:10px'>open_transient_store and<br />close_transient_store: the<br />per-transaction journal of<br />result occurrences and<br />grants.</div>"]
+        click 7 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/transient.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/transient.rs"
+        style 7 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        8["<div style='font-weight: bold'>Encrypted store</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/create_encrypted_store.rs, state/encrypted_store.rs]</div><div style='font-size: 80%; margin-top:10px'>create_encrypted_store and<br />make_store_handle_public: one<br />host-owned PDA per (program,<br />authority, scope) with named<br />slots and an append-only MMR.</div>"]
+        click 8 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/encrypted_store.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/state/encrypted_store.rs"
+        style 8 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        9["<div style='font-weight: bold'>FHE execution</div><div style='font-size: 70%; margin-top: 0px'>[Component: instructions/fhe_execute.rs]</div><div style='font-size: 80%; margin-top:10px'>fhe_execute: preflight,<br />account table, ordered step<br />walk, store outputs.</div>"]
+        click 9 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute.rs "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host/src/instructions/fhe_execute.rs"
+        style 9 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      end
+
+      16["<div style='font-weight: bold'>confidential-token</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Confidential token wrapper:<br />wrap, transfer, burn, redeem,<br />disclose.</div>"]
+      click 16 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-token "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-token"
+      style 16 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      21["<div style='font-weight: bold'>zama-fhe</div><div style='font-size: 70%; margin-top: 0px'>[Container: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>App-facing SDK: builds one<br />fhe_execute (FheExecution),<br />resolves its accounts and<br />invokes it by CPI.</div>"]
+      click 21 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-fhe "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-fhe"
+      style 21 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      22["<div style='font-weight: bold'>Shared protocol crates</div><div style='font-size: 70%; margin-top: 0px'>[Container: Rust crates]</div><div style='font-size: 80%; margin-top:10px'>One definition of the ACL,<br />permit, request and wire<br />rules, compiled into the host<br />program and the off-chain<br />services.</div>"]
+      click 22 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates"
+      style 22 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+    end
+
+    2-. "<div>Administers</div><div style='font-size: 70%'></div>" .->6
+    2-. "<div>Defines and destroys</div><div style='font-size: 70%'></div>" .->15
+    16-. "<div>Builds executions with</div><div style='font-size: 70%'></div>" .->21
+    21-. "<div>Invokes fhe_execute by CPI</div><div style='font-size: 70%'></div>" .->9
+    16-. "<div>Creates encrypted stores by<br />CPI</div><div style='font-size: 70%'></div>" .->8
+    9-. "<div>Records results and grants in</div><div style='font-size: 70%'></div>" .->7
+    9-. "<div>Verifies external inputs with</div><div style='font-size: 70%'></div>" .->10
+    9-. "<div>Charges HCU to</div><div style='font-size: 70%'></div>" .->11
+    9-. "<div>Emits FheExecutedEvent<br />through</div><div style='font-size: 70%'></div>" .->12
+    9-. "<div>Writes slots and appends MMR<br />leaves to</div><div style='font-size: 70%'></div>" .->8
+    14-. "<div>Checks certificates against</div><div style='font-size: 70%'></div>" .->15
+    8-. "<div>Layout, seeds and MMR from</div><div style='font-size: 70%'></div>" .->22
+    13-. "<div>Delegation layout from</div><div style='font-size: 70%'></div>" .->22
+
+  end

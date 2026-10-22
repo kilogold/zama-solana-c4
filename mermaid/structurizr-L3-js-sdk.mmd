@@ -1,0 +1,63 @@
+%%{init: {"theme": "dark"}}%%
+graph TB
+  linkStyle default color:#dddddd
+
+  subgraph diagram ["Component View: FHEVM Solana host - @fhevm/sdk/solana"]
+    style diagram fill:#191919,stroke:#191919
+
+    46["<div style='font-weight: bold'>Relayer</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Gateway relayer: input proofs<br />and fees.</div>"]
+    click 46 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer"
+    style 46 fill:#c8c8c8,stroke:#888888,color:#333333
+    48["<div style='font-weight: bold'>relayer-http</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Decryption relayer.</div>"]
+    click 48 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http"
+    style 48 fill:#c8c8c8,stroke:#888888,color:#333333
+
+    subgraph 4 ["FHEVM Solana host"]
+      style 4 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+      subgraph 28 ["@fhevm/sdk/solana"]
+        style 28 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+        29["<div style='font-weight: bold'>Clients</div><div style='font-size: 70%; margin-top: 0px'>[Component: clients/]</div><div style='font-size: 80%; margin-top:10px'>createFhevmBaseClient,<br />createFhevmEncryptClient,<br />createFhevmDecryptClient,<br />createFhevmPublicDecryptClient.</div>"]
+        click 29 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/clients "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/clients"
+        style 29 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        30["<div style='font-weight: bold'>Input encryption</div><div style='font-size: 70%; margin-top: 0px'>[Component: actions/encryptInput.ts, actions/submitInputProof.ts]</div><div style='font-size: 80%; margin-top:10px'>encryptInput and<br />submitInputProof.</div>"]
+        click 30 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/actions "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/actions"
+        style 30 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        31["<div style='font-weight: bold'>Permit</div><div style='font-size: 70%; margin-top: 0px'>[Component: permit/]</div><div style='font-size: 80%; margin-top:10px'>Builds, renders and validates<br />the user-decrypt permit and<br />its offchain-message<br />envelope.</div>"]
+        click 31 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/permit "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/permit"
+        style 31 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        32["<div style='font-weight: bold'>User decryption</div><div style='font-size: 70%; margin-top: 0px'>[Component: userDecrypt/]</div><div style='font-size: 80%; margin-top:10px'>Builds the request, executes<br />it and decodes the response.</div>"]
+        click 32 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/userDecrypt "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/userDecrypt"
+        style 32 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        33["<div style='font-weight: bold'>Public decryption</div><div style='font-size: 70%; margin-top: 0px'>[Component: actions/]</div><div style='font-size: 80%; margin-top:10px'>decryptPublicValue,<br />publicDecryptCertificate,<br />verifyPublicDecrypt.</div>"]
+        click 33 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/actions "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/actions"
+        style 33 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        34["<div style='font-weight: bold'>Decryption transport</div><div style='font-size: 70%; margin-top: 0px'>[Component: decryption/]</div><div style='font-size: 80%; margin-top:10px'>Posts decryption requests to<br />relayer-http, with deadline<br />and retry.</div>"]
+        click 34 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/decryption "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/decryption"
+        style 34 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        35["<div style='font-weight: bold'>Host actions</div><div style='font-size: 70%; margin-top: 0px'>[Component: transientStore.ts, encryptedStore.ts, actions/]</div><div style='font-size: 80%; margin-top:10px'>Transient store, encrypted<br />store, user-decryption<br />delegation, permit<br />revocation, host KMS reads.</div>"]
+        click 35 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana"
+        style 35 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        36["<div style='font-weight: bold'>Cleartext mode</div><div style='font-size: 70%; margin-top: 0px'>[Component: cleartext/]</div><div style='font-size: 80%; margin-top:10px'>Encrypt and decrypt clients<br />for a cleartext host build.</div>"]
+        click 36 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/cleartext "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana/cleartext"
+        style 36 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      end
+
+      37["<div style='font-weight: bold'>@fhevm/solana-zama-host</div><div style='font-size: 70%; margin-top: 0px'>[Container: TypeScript]</div><div style='font-size: 80%; margin-top:10px'>Codama client for zama-host,<br />plus the version-1 signing<br />and finalized sending every<br />Solana client uses.</div>"]
+      click 37 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/zama-host "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/zama-host"
+      style 37 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+    end
+
+    29-. "<div>Exposes</div><div style='font-size: 70%'></div>" .->30
+    29-. "<div>Exposes</div><div style='font-size: 70%'></div>" .->32
+    29-. "<div>Exposes</div><div style='font-size: 70%'></div>" .->33
+    32-. "<div>Signs requests with</div><div style='font-size: 70%'></div>" .->31
+    32-. "<div>Sends through</div><div style='font-size: 70%'></div>" .->34
+    33-. "<div>Sends through</div><div style='font-size: 70%'></div>" .->34
+    33-. "<div>Submits verify_public_decrypt<br />with</div><div style='font-size: 70%'></div>" .->37
+    35-. "<div>Builds and sends instructions<br />with</div><div style='font-size: 70%'></div>" .->37
+    30-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
+    34-. "<div>Posts decryption requests to</div><div style='font-size: 70%'>[HTTPS]</div>" .->48
+
+  end

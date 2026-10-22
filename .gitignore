@@ -1,0 +1,6 @@
+# Structurizr Local state
+.structurizr/
+workspace.json
+
+# Static site, built by the Pages workflow
+site/

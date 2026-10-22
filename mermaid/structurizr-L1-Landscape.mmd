@@ -1,0 +1,52 @@
+%%{init: {"theme": "dark"}}%%
+graph TB
+  linkStyle default color:#dddddd
+
+  subgraph diagram ["System Landscape View"]
+    style diagram fill:#191919,stroke:#191919
+
+    1["<div style='font-weight: bold'>dApp user</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Holds a Solana wallet.<br />Encrypts inputs and signs<br />user-decrypt permits through<br />an app built on the SDKs.</div>"]
+    style 1 fill:#c8c8c8,stroke:#888888,color:#333333
+    2["<div style='font-weight: bold'>Host operator</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>zama-host admin and pausers.<br />Can be a program-controlled<br />signer such as a Squads<br />vault.</div>"]
+    style 2 fill:#c8c8c8,stroke:#888888,color:#333333
+    3["<div style='font-weight: bold'>Solana cluster</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Validators, JSON-RPC and<br />Yellowstone gRPC. Every<br />component reads it at<br />finalized commitment.</div>"]
+    style 3 fill:#c8c8c8,stroke:#888888,color:#333333
+    39["<div style='font-weight: bold'>Coprocessor</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Zama's FHE compute network.</div>"]
+    click 39 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine"
+    style 39 fill:#c8c8c8,stroke:#888888,color:#333333
+    4["<div style='font-weight: bold'>FHEVM Solana host</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>The Solana runtime side of<br />FHEVM: on-chain programs,<br />Rust crates and TypeScript<br />SDKs.</div>"]
+    click 4 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana"
+    style 4 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+    44["<div style='font-weight: bold'>Gateway</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Zama's gateway chain<br />contracts.</div>"]
+    click 44 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/gateway-contracts "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/gateway-contracts"
+    style 44 fill:#c8c8c8,stroke:#888888,color:#333333
+    46["<div style='font-weight: bold'>Relayer</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Gateway relayer: input proofs<br />and fees.</div>"]
+    click 46 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer"
+    style 46 fill:#c8c8c8,stroke:#888888,color:#333333
+    48["<div style='font-weight: bold'>relayer-http</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Decryption relayer.</div>"]
+    click 48 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http"
+    style 48 fill:#c8c8c8,stroke:#888888,color:#333333
+    50["<div style='font-weight: bold'>KMS connector</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>One per KMS party. The<br />decrypt-authorization<br />authority.</div>"]
+    click 50 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector"
+    style 50 fill:#c8c8c8,stroke:#888888,color:#333333
+    53["<div style='font-weight: bold'>KMS core</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Chain-blind threshold<br />decryption (zama-ai/kms; its<br />solana branch holds the<br />Solana user address).</div>"]
+    style 53 fill:#c8c8c8,stroke:#888888,color:#333333
+
+    4-. "<div>Posts decryption requests to</div><div style='font-size: 70%'>[HTTPS]</div>" .->48
+    4-. "<div>Sends version-1 transactions<br />and reads accounts at<br />finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
+    3-. "<div>Executes</div><div style='font-size: 70%'></div>" .->4
+    46-. "<div>Calls<br />verifyProofRequestSolana</div><div style='font-size: 70%'></div>" .->44
+    39-. "<div>Reads requests and submits<br />signed responses</div><div style='font-size: 70%'></div>" .->44
+    39-. "<div>Follows zama-host at<br />finalized</div><div style='font-size: 70%'>[Yellowstone gRPC, JSON-RPC]</div>" .->3
+    39-. "<div>Resolves compiled<br />instructions with</div><div style='font-size: 70%'></div>" .->4
+    48-. "<div>Forwards decryption requests<br />to</div><div style='font-size: 70%'>[HTTPS]</div>" .->50
+    48-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->4
+    50-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->4
+    50-. "<div>Reads encrypted stores and<br />delegations at finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
+    50-. "<div>Fetches MMR inclusion proofs<br />from</div><div style='font-size: 70%'>[HTTP, CBOR]</div>" .->39
+    50-. "<div>Requests threshold decryption<br />from</div><div style='font-size: 70%'></div>" .->53
+    1-. "<div>Encrypts inputs and requests<br />decryptions through an app<br />using</div><div style='font-size: 70%'></div>" .->4
+    2-. "<div>Administers</div><div style='font-size: 70%'></div>" .->4
+    4-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
+
+  end

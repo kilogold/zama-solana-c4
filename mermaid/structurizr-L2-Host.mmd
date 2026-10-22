@@ -1,0 +1,96 @@
+%%{init: {"theme": "dark"}}%%
+graph TB
+  linkStyle default color:#dddddd
+
+  subgraph diagram ["Container View: FHEVM Solana host"]
+    style diagram fill:#191919,stroke:#191919
+
+    1["<div style='font-weight: bold'>dApp user</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Holds a Solana wallet.<br />Encrypts inputs and signs<br />user-decrypt permits through<br />an app built on the SDKs.</div>"]
+    style 1 fill:#c8c8c8,stroke:#888888,color:#333333
+    2["<div style='font-weight: bold'>Host operator</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>zama-host admin and pausers.<br />Can be a program-controlled<br />signer such as a Squads<br />vault.</div>"]
+    style 2 fill:#c8c8c8,stroke:#888888,color:#333333
+    3["<div style='font-weight: bold'>Solana cluster</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Validators, JSON-RPC and<br />Yellowstone gRPC. Every<br />component reads it at<br />finalized commitment.</div>"]
+    style 3 fill:#c8c8c8,stroke:#888888,color:#333333
+    39["<div style='font-weight: bold'>Coprocessor</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Zama's FHE compute network.</div>"]
+    click 39 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/coprocessor/fhevm-engine"
+    style 39 fill:#c8c8c8,stroke:#888888,color:#333333
+    46["<div style='font-weight: bold'>Relayer</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Gateway relayer: input proofs<br />and fees.</div>"]
+    click 46 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer"
+    style 46 fill:#c8c8c8,stroke:#888888,color:#333333
+    48["<div style='font-weight: bold'>relayer-http</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Decryption relayer.</div>"]
+    click 48 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/relayer-http"
+    style 48 fill:#c8c8c8,stroke:#888888,color:#333333
+    50["<div style='font-weight: bold'>KMS connector</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>One per KMS party. The<br />decrypt-authorization<br />authority.</div>"]
+    click 50 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector"
+    style 50 fill:#c8c8c8,stroke:#888888,color:#333333
+
+    subgraph 4 ["FHEVM Solana host"]
+      style 4 fill:#191919,stroke:#4fbf95,color:#4fbf95
+
+      subgraph group1 ["Reference app programs"]
+        style group1 fill:#191919,stroke:#cccccc,color:#cccccc,stroke-dasharray:5
+
+        16["<div style='font-weight: bold'>confidential-token</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Confidential token wrapper:<br />wrap, transfer, burn, redeem,<br />disclose.</div>"]
+        click 16 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-token "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-token"
+        style 16 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        17["<div style='font-weight: bold'>confidential-batcher</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Aggregates encrypted deposits<br />per batch and pays each user<br />an encrypted proportional cut<br />(DD-042).</div>"]
+        click 17 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-batcher "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/confidential-batcher"
+        style 17 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        18["<div style='font-weight: bold'>demo-vault</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Public share-mint vault the<br />batcher fronts. Plain SPL, no<br />FHE.</div>"]
+        click 18 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/demo-vault "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/demo-vault"
+        style 18 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        19["<div style='font-weight: bold'>encrypted-counter</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Smallest complete zama-host<br />consumer, written to be<br />copied.</div>"]
+        click 19 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/encrypted-counter "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/encrypted-counter"
+        style 19 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+        20["<div style='font-weight: bold'>dep-chain</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Load shape: a full-depth<br />dependent FHE chain in one<br />fhe_execute.</div>"]
+        click 20 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/dep-chain "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/dep-chain"
+        style 20 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      end
+
+      21["<div style='font-weight: bold'>zama-fhe</div><div style='font-size: 70%; margin-top: 0px'>[Container: Rust crate]</div><div style='font-size: 80%; margin-top:10px'>App-facing SDK: builds one<br />fhe_execute (FheExecution),<br />resolves its accounts and<br />invokes it by CPI.</div>"]
+      click 21 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-fhe "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates/zama-fhe"
+      style 21 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      22["<div style='font-weight: bold'>Shared protocol crates</div><div style='font-size: 70%; margin-top: 0px'>[Container: Rust crates]</div><div style='font-size: 80%; margin-top:10px'>One definition of the ACL,<br />permit, request and wire<br />rules, compiled into the host<br />program and the off-chain<br />services.</div>"]
+      click 22 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/crates"
+      style 22 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      28["<div style='font-weight: bold'>@fhevm/sdk/solana</div><div style='font-size: 70%; margin-top: 0px'>[Container: TypeScript]</div><div style='font-size: 80%; margin-top:10px'>Client SDK: encrypt inputs,<br />user and public decryption,<br />permits, delegation,<br />transient store.</div>"]
+      click 28 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/sdk/js-sdk/src/solana"
+      style 28 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      37["<div style='font-weight: bold'>@fhevm/solana-zama-host</div><div style='font-size: 70%; margin-top: 0px'>[Container: TypeScript]</div><div style='font-size: 80%; margin-top:10px'>Codama client for zama-host,<br />plus the version-1 signing<br />and finalized sending every<br />Solana client uses.</div>"]
+      click 37 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/zama-host "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/zama-host"
+      style 37 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      38["<div style='font-weight: bold'>@fhevm/confidential-token</div><div style='font-size: 70%; margin-top: 0px'>[Container: TypeScript]</div><div style='font-size: 80%; margin-top:10px'>Codama client for<br />confidential-token.</div>"]
+      click 38 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/confidential-token "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/clients/confidential-token"
+      style 38 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+      5["<div style='font-weight: bold'>zama-host</div><div style='font-size: 70%; margin-top: 0px'>[Container: Anchor program]</div><div style='font-size: 80%; margin-top:10px'>Protocol host program:<br />encrypted stores and their<br />ACL/MMR, fhe_execute, input<br />attestations, public-decrypt<br />verification, KMS contexts,<br />HCU metering.</div>"]
+      click 5 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/solana/programs/zama-host"
+      style 5 fill:#1b7f5f,stroke:#0f4d39,color:#ffffff
+    end
+
+    28-. "<div>Posts decryption requests to</div><div style='font-size: 70%'>[HTTPS]</div>" .->48
+    37-. "<div>Sends version-1 transactions<br />and reads accounts at<br />finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
+    38-. "<div>Sends confidential-token<br />instructions to</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
+    3-. "<div>Executes</div><div style='font-size: 70%'></div>" .->5
+    39-. "<div>Follows zama-host at<br />finalized</div><div style='font-size: 70%'>[Yellowstone gRPC, JSON-RPC]</div>" .->3
+    39-. "<div>Resolves compiled<br />instructions with</div><div style='font-size: 70%'></div>" .->22
+    48-. "<div>Forwards decryption requests<br />to</div><div style='font-size: 70%'>[HTTPS]</div>" .->50
+    48-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->22
+    50-. "<div>Checks request form with</div><div style='font-size: 70%'></div>" .->22
+    50-. "<div>Reads encrypted stores and<br />delegations at finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
+    50-. "<div>Fetches MMR inclusion proofs<br />from</div><div style='font-size: 70%'>[HTTP, CBOR]</div>" .->39
+    1-. "<div>Encrypts inputs and requests<br />decryptions through an app<br />using</div><div style='font-size: 70%'></div>" .->28
+    1-. "<div>Moves confidential tokens<br />through an app using</div><div style='font-size: 70%'></div>" .->38
+    2-. "<div>Administers</div><div style='font-size: 70%'></div>" .->5
+    16-. "<div>Builds executions with</div><div style='font-size: 70%'></div>" .->21
+    17-. "<div>Builds executions with</div><div style='font-size: 70%'></div>" .->21
+    19-. "<div>Builds executions with</div><div style='font-size: 70%'></div>" .->21
+    20-. "<div>Builds executions with</div><div style='font-size: 70%'></div>" .->21
+    21-. "<div>Invokes fhe_execute by CPI</div><div style='font-size: 70%'></div>" .->5
+    16-. "<div>Creates encrypted stores by<br />CPI</div><div style='font-size: 70%'></div>" .->5
+    17-. "<div>Calls confidential_transfer<br />by CPI</div><div style='font-size: 70%'></div>" .->16
+    17-. "<div>Deposits and redeems by CPI</div><div style='font-size: 70%'></div>" .->18
+    5-. "<div>Layout, seeds and MMR from</div><div style='font-size: 70%'></div>" .->22
+    28-. "<div>Submits verify_public_decrypt<br />with</div><div style='font-size: 70%'></div>" .->37
+    28-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
+
+  end
