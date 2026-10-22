@@ -23,6 +23,8 @@ jobs:
       # Same Structurizr version as the local install, so the site matches what we review.
       - name: Export static site
         run: |
+          # The container's user differs from the runner's, so it cannot create site/ itself.
+          mkdir -p site && chmod a+rwx site
           docker run --rm -v "$PWD:/usr/local/structurizr" structurizr/structurizr:2026.06.28 \
             export -w /usr/local/structurizr/workspace.dsl -f static -o /usr/local/structurizr/site
 
