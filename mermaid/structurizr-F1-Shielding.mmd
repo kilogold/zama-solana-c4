@@ -1,0 +1,34 @@
+%%{init: {"theme": "dark"}}%%
+sequenceDiagram
+  autonumber
+
+  actor 1 as dApp user<br />[Person]
+  participant 38 as @fhevm/confidential-token<br />[Container: TypeScript]
+  participant 28 as @fhevm/sdk/solana<br />[Container: TypeScript]
+  participant 37 as @fhevm/solana-zama-host<br />[Container: TypeScript]
+  participant 3 as Solana cluster<br />[Software System]
+  participant 5 as zama-host<br />[Container: Anchor program]
+  participant 16 as confidential-token<br />[Container: Anchor program]
+  participant 21 as zama-fhe<br />[Container: Rust crate]
+  participant 54 as SPL Token programs<br />[Software System]
+  participant 40 as Solana host listener<br />[Container: Rust]
+  participant 41 as solana-merkle-proof-service<br />[Container: Rust]
+  participant 43 as FHE workers<br />[Container: Rust]
+
+  1->>38: Builds initialize_token_account (no-op if the account exists) and wrap_usdc(amount)
+  1->>28: prepareTransientStore, then signFheTransaction(instructions)
+  28->>37: Wraps the instructions in open_transient_store ... close_transient_store
+  37->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
+  3->>5: open_transient_store
+  3->>16: initialize_token_account
+  16->>5: create_encrypted_store for the balance, by CPI
+  16->>21: Builds trivial_encrypt(0) into the balance slot
+  21->>5: fhe_execute by CPI
+  3->>16: wrap_usdc(amount)
+  16->>54: transfer_checked: owner's ATA to the vault ATA
+  16->>21: Builds trivial_encrypt(amount) and a clamped add to the balance and the total supply
+  21->>5: fhe_execute by CPI: writes both slots, appends MMR leaves, emits FheExecutedEvent
+  3->>5: close_transient_store (must be last)
+  40->>3: Reads the finalized block and rebuilds both executions<br />[Yellowstone gRPC, JSON-RPC]
+  41->>3: Indexes the new balance and total-supply leaves<br />[Yellowstone gRPC, JSON-RPC]
+  40->>43: Schedules the FHE operations

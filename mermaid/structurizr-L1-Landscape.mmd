@@ -31,7 +31,10 @@ graph TB
     style 50 fill:#c8c8c8,stroke:#888888,color:#333333
     53["<div style='font-weight: bold'>KMS core</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Chain-blind threshold<br />decryption (zama-ai/kms; its<br />solana branch holds the<br />Solana user address).</div>"]
     style 53 fill:#c8c8c8,stroke:#888888,color:#333333
+    54["<div style='font-weight: bold'>SPL Token programs</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Token and Token-2022. Hold<br />the public underlying that<br />confidential-token escrows.</div>"]
+    style 54 fill:#c8c8c8,stroke:#888888,color:#333333
 
+    4-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
     4-. "<div>Posts decryption requests to</div><div style='font-size: 70%'>[HTTPS]</div>" .->48
     4-. "<div>Sends version-1 transactions<br />and reads accounts at<br />finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
     3-. "<div>Executes</div><div style='font-size: 70%'></div>" .->4
@@ -47,6 +50,6 @@ graph TB
     50-. "<div>Requests threshold decryption<br />from</div><div style='font-size: 70%'></div>" .->53
     1-. "<div>Encrypts inputs and requests<br />decryptions through an app<br />using</div><div style='font-size: 70%'></div>" .->4
     2-. "<div>Administers</div><div style='font-size: 70%'></div>" .->4
-    4-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
+    4-. "<div>Escrows the underlying by<br />transfer_checked CPI</div><div style='font-size: 70%'></div>" .->54
 
   end

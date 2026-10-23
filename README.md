@@ -21,6 +21,7 @@ A C4 model of the Solana port of Zama FHEVM, from system landscape down to compo
 | `L3-zama-host` | Component | `zama-host` instruction families |
 | `L3-Shared-crates` | Component | The shared crates and who compiles them in |
 | `L3-js-sdk` | Component | The Solana client SDK |
+| `F1-Shielding` | Dynamic | Shield public USDC into a confidential balance, in one transaction |
 
 ## Working on it
 

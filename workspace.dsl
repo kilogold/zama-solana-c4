@@ -256,6 +256,10 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             tags "Out of scope"
         }
 
+        splToken = softwareSystem "SPL Token programs" "Token and Token-2022. Hold the public underlying that confidential-token escrows." {
+            tags "Out of scope"
+        }
+
         # People
         user -> host.jsSdk "Encrypts inputs and requests decryptions through an app using"
         user -> host.tokenClient "Moves confidential tokens through an app using"
@@ -271,6 +275,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
         host.token -> host.zamaHost.stores "Creates encrypted stores by CPI"
         host.batcher -> host.token "Calls confidential_transfer by CPI"
         host.batcher -> host.vault "Deposits and redeems by CPI"
+        host.token -> splToken "Escrows the underlying by transfer_checked CPI"
 
         # Inside zama-host
         host.zamaHost.execute -> host.zamaHost.transient "Records results and grants in"
@@ -299,6 +304,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
 
         # Solana programs run on the cluster
         cluster -> host.zamaHost "Executes"
+        cluster -> host.token "Executes"
 
         # Input attestation path
         relayer.inputRelay -> gateway.inputVerification "Calls verifyProofRequestSolana"
@@ -358,6 +364,51 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
         component host.jsSdk "L3-js-sdk" "Level 3: the Solana client SDK." {
             include *
             autoLayout tb
+        }
+
+        /*
+         * Flow views. Each one is a dynamic view, so Structurizr can draw it as a sequence diagram.
+         *
+         * Shielding: one transaction [open_transient_store, initialize_token_account, wrap_usdc,
+         * close_transient_store], as the demo-dapp composes it (demo-dapp/src/deposit.ts L337-L359).
+         * - The sandwich and its order: sdk/js-sdk/src/solana/transientStore.ts L78-L90.
+         * - Sending at finalized: demo-dapp/src/demoClient.ts L19-L23 (finalizedTransactionSending
+         *   from @fhevm/solana-zama-host, transientStoreTransactions from @fhevm/sdk/solana).
+         * - initialize_token_account returns early when the account exists:
+         *   programs/confidential-token/src/instructions/initialize_token_account.rs L42-L44.
+         * - wrap_usdc: programs/confidential-token/src/instructions/wrap_usdc.rs L106-L187.
+         * - fhe_execute requires an open transient store and a final close:
+         *   programs/zama-host/src/instructions/fhe_execute.rs L104-L112.
+         * - The off-chain steps start at finalized. They are asynchronous and not part of the transaction.
+         */
+        dynamic host "F1-Shielding" "Flow: shield public USDC into a confidential balance, in one transaction." {
+            user -> host.tokenClient "Builds initialize_token_account (no-op if the account exists) and wrap_usdc(amount)"
+            user -> host.jsSdk "prepareTransientStore, then signFheTransaction(instructions)"
+            host.jsSdk -> host.hostClient "Wraps the instructions in open_transient_store ... close_transient_store"
+            host.hostClient -> cluster "Sends the transaction and confirms it at finalized"
+            cluster -> host.zamaHost "open_transient_store"
+            cluster -> host.token "initialize_token_account"
+            host.token -> host.zamaHost "create_encrypted_store for the balance, by CPI"
+            host.token -> host.zamaFhe "Builds trivial_encrypt(0) into the balance slot"
+            host.zamaFhe -> host.zamaHost "fhe_execute by CPI"
+            cluster -> host.token "wrap_usdc(amount)"
+            host.token -> splToken "transfer_checked: owner's ATA to the vault ATA"
+            host.token -> host.zamaFhe "Builds trivial_encrypt(amount) and a clamped add to the balance and the total supply"
+            host.zamaFhe -> host.zamaHost "fhe_execute by CPI: writes both slots, appends MMR leaves, emits FheExecutedEvent"
+            cluster -> host.zamaHost "close_transient_store (must be last)"
+            {
+                {
+                    coprocessor.listener -> cluster "Reads the finalized block and rebuilds both executions"
+                    coprocessor.listener -> coprocessor.workers "Schedules the FHE operations"
+                }
+                {
+                    coprocessor.merkleService -> cluster "Indexes the new balance and total-supply leaves"
+                }
+            }
+            autoLayout lr
+            properties {
+                "mermaid.sequenceDiagram" "true"
+            }
         }
 
         styles {

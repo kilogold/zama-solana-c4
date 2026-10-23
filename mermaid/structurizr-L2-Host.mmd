@@ -23,6 +23,8 @@ graph TB
     50["<div style='font-weight: bold'>KMS connector</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>One per KMS party. The<br />decrypt-authorization<br />authority.</div>"]
     click 50 https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector "https://github.com/zama-ai/fhevm/tree/50782a4ad01e0642b15b4841b1fa5c0792cf1636/kms-connector"
     style 50 fill:#c8c8c8,stroke:#888888,color:#333333
+    54["<div style='font-weight: bold'>SPL Token programs</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Token and Token-2022. Hold<br />the public underlying that<br />confidential-token escrows.</div>"]
+    style 54 fill:#c8c8c8,stroke:#888888,color:#333333
 
     subgraph 4 ["FHEVM Solana host"]
       style 4 fill:#191919,stroke:#4fbf95,color:#4fbf95
@@ -71,6 +73,7 @@ graph TB
     37-. "<div>Sends version-1 transactions<br />and reads accounts at<br />finalized</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
     38-. "<div>Sends confidential-token<br />instructions to</div><div style='font-size: 70%'>[JSON-RPC]</div>" .->3
     3-. "<div>Executes</div><div style='font-size: 70%'></div>" .->5
+    3-. "<div>Executes</div><div style='font-size: 70%'></div>" .->16
     39-. "<div>Follows zama-host at<br />finalized</div><div style='font-size: 70%'>[Yellowstone gRPC, JSON-RPC]</div>" .->3
     39-. "<div>Resolves compiled<br />instructions with</div><div style='font-size: 70%'></div>" .->22
     48-. "<div>Forwards decryption requests<br />to</div><div style='font-size: 70%'>[HTTPS]</div>" .->50
@@ -89,6 +92,7 @@ graph TB
     16-. "<div>Creates encrypted stores by<br />CPI</div><div style='font-size: 70%'></div>" .->5
     17-. "<div>Calls confidential_transfer<br />by CPI</div><div style='font-size: 70%'></div>" .->16
     17-. "<div>Deposits and redeems by CPI</div><div style='font-size: 70%'></div>" .->18
+    16-. "<div>Escrows the underlying by<br />transfer_checked CPI</div><div style='font-size: 70%'></div>" .->54
     5-. "<div>Layout, seeds and MMR from</div><div style='font-size: 70%'></div>" .->22
     28-. "<div>Submits verify_public_decrypt<br />with</div><div style='font-size: 70%'></div>" .->37
     28-. "<div>Submits input proofs to</div><div style='font-size: 70%'>[HTTPS]</div>" .->46
