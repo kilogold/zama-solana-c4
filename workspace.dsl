@@ -477,11 +477,9 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
          *   landing during the round trip leaves the certificate stale (DD-016).
          */
         dynamic host "F3a-Close-ProveZero" "Proposed option A: close an empty token account with a certificate that its balance is 0." {
-            user -> host.tokenClient "Builds disable_incoming_transfers (proposed)"
-            host.tokenClient -> cluster "Sends it and confirms it at finalized"
-            cluster -> host.token "Sets the account's incoming-disabled flag: confidential_transfer now refuses credits to it"
-            user -> host.tokenClient "Builds make_token_account_handle_public(Balance, current handle)"
-            host.tokenClient -> cluster "Sends it and confirms it at finalized"
+            user -> host.tokenClient "Builds disable_incoming_transfers (proposed) and make_token_account_handle_public(Balance, current handle)"
+            host.tokenClient -> cluster "Sends both in one transaction and confirms it at finalized"
+            cluster -> host.token "Sets the incoming-disabled flag (confidential_transfer now refuses credits), then seals the balance handle public"
             user -> host.jsSdk "publicDecryptCertificate(balance handle)"
             host.jsSdk -> relayerHttp.router "Posts the public decryption"
             relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"

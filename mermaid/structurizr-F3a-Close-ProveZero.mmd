@@ -13,11 +13,9 @@ sequenceDiagram
   participant 53 as KMS core<br />[Software System]
   participant 5 as zama-host<br />[Container: Anchor program]
 
-  1->>38: Builds disable_incoming_transfers (proposed)
-  38->>3: Sends it and confirms it at finalized<br />[JSON-RPC]
-  3->>16: Sets the account's incoming-disabled flag: confidential_transfer now refuses credits to it
-  1->>38: Builds make_token_account_handle_public(Balance, current handle)
-  38->>3: Sends it and confirms it at finalized<br />[JSON-RPC]
+  1->>38: Builds disable_incoming_transfers (proposed) and make_token_account_handle_public(Balance, current handle)
+  38->>3: Sends both in one transaction and confirms it at finalized<br />[JSON-RPC]
+  3->>16: Sets the incoming-disabled flag (confidential_transfer now refuses credits), then seals the balance handle public
   1->>28: publicDecryptCertificate(balance handle)
   28->>49: Posts the public decryption<br />[HTTPS]
   49->>51: Forwards to every connector<br />[HTTPS]
