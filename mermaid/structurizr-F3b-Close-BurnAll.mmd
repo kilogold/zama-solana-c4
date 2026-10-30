@@ -20,9 +20,9 @@ sequenceDiagram
   1->>28: sendFheTransaction(instructions)
   28->>37: Wraps the instruction in open_transient_store ... close_transient_store
   37->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
-  3->>16: confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): transfers in and out are refused
+  3->>16: confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): confidential_transfer refuses credits to it
   16->>21: Builds burned = the whole balance, so the new balance is balance - balance: an encrypted 0 by construction
-  21->>5: fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable
+  21->>5: fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable (PendingBurn records the zero balance handle, proposed)
   1->>28: publicDecryptCertificate(burned handle)
   28->>49: Posts the public decryption<br />[HTTPS]
   49->>51: Forwards to every connector<br />[HTTPS]
@@ -30,7 +30,7 @@ sequenceDiagram
   52->>53: Checks the public leaf, then decrypts: n, the whole remaining balance
   1->>38: Builds redeem_burned_amount(burned handle, n, certificate) for the Closing account
   38->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
-  3->>16: redeem_burned_amount: certificate handle equals PendingBurn.burned_handle
+  3->>16: redeem_burned_amount: certificate handle equals PendingBurn.burned_handle, and the balance handle is still the recorded zero (proposed)
   16->>5: verify_public_decrypt by CPI: cleartext is n
   16->>54: transfer_checked n: vault ATA to the owner's ATA
   16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent

@@ -507,18 +507,21 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
          * - redeem_burned_amount verifies the certificate against PendingBurn.burned_handle and pays
          *   the underlying (programs/confidential-token/src/instructions/redeem_burned_amount.rs
          *   L138-L189).
-         * - Proposed: a close flag on the burn that marks the account Closing (transfers in and out
-         *   refused, so the zero stays the current handle), and a redeem that closes a Closing account.
-         *   cancel_pending_burn clears the flag.
+         * - Proposed: a close flag on the burn that marks the account Closing (confidential_transfer
+         *   refuses credits to it) and records the new zero balance handle in PendingBurn; a redeem that
+         *   checks that handle is still current, then closes. cancel_pending_burn clears the flag.
+         * - Any unfrozen account of the underlying mint can receive the redeem, and no check rejects 0
+         *   (redeem_burned_amount.rs L48-L52; common.rs L516-L528), so an empty account closes by
+         *   burning 0 and redeeming 0.
          */
         dynamic host "F3b-Close-BurnAll" "Proposed option B: burn the whole balance, then redeem it and close the token account in one transaction." {
             user -> host.tokenClient "Builds confidential_burn_from_value(Balance slot, close = true) (close flag proposed)"
             user -> host.jsSdk "sendFheTransaction(instructions)"
             host.jsSdk -> host.hostClient "Wraps the instruction in open_transient_store ... close_transient_store"
             host.hostClient -> cluster "Sends the transaction and confirms it at finalized"
-            cluster -> host.token "confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): transfers in and out are refused"
+            cluster -> host.token "confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): confidential_transfer refuses credits to it"
             host.token -> host.zamaFhe "Builds burned = the whole balance, so the new balance is balance - balance: an encrypted 0 by construction"
-            host.zamaFhe -> host.zamaHost "fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable"
+            host.zamaFhe -> host.zamaHost "fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable (PendingBurn records the zero balance handle, proposed)"
             user -> host.jsSdk "publicDecryptCertificate(burned handle)"
             host.jsSdk -> relayerHttp.router "Posts the public decryption"
             relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
@@ -526,7 +529,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             kmsConnector.kmsWorker -> kmsCore "Checks the public leaf, then decrypts: n, the whole remaining balance"
             user -> host.tokenClient "Builds redeem_burned_amount(burned handle, n, certificate) for the Closing account"
             host.tokenClient -> cluster "Sends the transaction and confirms it at finalized"
-            cluster -> host.token "redeem_burned_amount: certificate handle equals PendingBurn.burned_handle"
+            cluster -> host.token "redeem_burned_amount: certificate handle equals PendingBurn.burned_handle, and the balance handle is still the recorded zero (proposed)"
             host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is n"
             host.token -> splToken "transfer_checked n: vault ATA to the owner's ATA"
             host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
