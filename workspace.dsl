@@ -468,11 +468,16 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
          *   Token-2022's EmptyAccount zero-ciphertext proof. Event CPI is Zama's convention (DD-044).
          * - Today a missing Store fails decryption as EncryptedStoreFailure::Absent
          *   (kms-connector/crates/kms-worker/src/core/solana/encrypted_store.rs L45-L75).
-         * - A transfer that lands between steps 1 and 7 changes the balance handle, so the close fails
-         *   on a stale handle and the owner retries (DD-016).
+         * - Guard: the owner first disables incoming transfers (proposed flag that confidential_transfer
+         *   checks), as Token-2022's DisableConfidentialCredits does before EmptyAccount. Without it, any
+         *   transfer landing before the close changes the balance handle and leaves the certificate
+         *   stale (DD-016).
          * - Reading an old close needs an archival RPC: a liveness dependency, not a safety one.
          */
         dynamic host "F3-StoreClosed" "Proposed flow: close an empty token account and its Store, then decrypt its history from the StoreClosed event." {
+            user -> host.tokenClient "Builds disable_incoming_transfers (proposed)"
+            host.tokenClient -> cluster "Sends it and confirms it at finalized"
+            cluster -> host.token "Sets the account's incoming-disabled flag: confidential_transfer now refuses credits to it"
             user -> host.tokenClient "make_token_account_handle_public(Balance, current handle)"
             user -> host.jsSdk "publicDecryptCertificate(balance handle)"
             host.jsSdk -> relayerHttp.router "Posts the public decryption"
