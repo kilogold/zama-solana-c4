@@ -1,0 +1,20 @@
+%%{init: {"theme": "dark"}}%%
+sequenceDiagram
+  autonumber
+
+  actor 1 as dApp user<br />[Person]
+  participant 28 as @fhevm/sdk/solana<br />[Container: TypeScript]
+  participant 49 as Decryption router<br />[Container: Rust]
+  participant 51 as Endpoint<br />[Container: Rust]
+  participant 52 as kms-worker Solana pipeline<br />[Container: Rust]
+  participant 3 as Solana cluster<br />[Software System]
+  participant 41 as solana-merkle-proof-service<br />[Container: Rust]
+  participant 53 as KMS core<br />[Software System]
+
+  1->>28: User-decrypts a historical handle from a Store that F3a or F3b closed
+  28->>49: Posts the user decryption<br />[HTTPS]
+  49->>51: Forwards to every connector<br />[HTTPS]
+  51->>52: Queues the request
+  52->>3: Store is absent: getSignaturesForAddress(store), then the finalized closing transaction (archival RPC)<br />[JSON-RPC]
+  52->>41: Fetches the allow leaf's MMR proof<br />[HTTP, CBOR]
+  52->>53: Proof verified against the StoreClosed peaks: decrypts for the user

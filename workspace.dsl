@@ -457,28 +457,31 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
         }
 
         /*
-         * StoreClosed (proposed, not at the pin): the review's recommendation for recovering a token
-         * account's rent while keeping its decrypt history verifiable. Close an empty token account and
-         * its balance Store, emit the Store's final MMR state as an event, and let the KMS read that
-         * event when a later decryption names the closed Store.
-         * - Proposed instructions: confidential-token close_token_account and zama-host
-         *   close_encrypted_store. Neither exists at the pin.
-         * - Existing pieces: make_token_account_handle_public (programs/confidential-token/src/lib.rs
-         *   L116-L124) and verify_public_decrypt (DD-040) prove the balance is zero, the analogue of
-         *   Token-2022's EmptyAccount zero-ciphertext proof. Event CPI is Zama's convention (DD-044).
-         * - Today a missing Store fails decryption as EncryptedStoreFailure::Absent
-         *   (kms-connector/crates/kms-worker/src/core/solana/encrypted_store.rs L45-L75).
-         * - Guard: the owner first disables incoming transfers (proposed flag that confidential_transfer
-         *   checks), as Token-2022's DisableConfidentialCredits does before EmptyAccount. Without it, any
-         *   transfer landing before the close changes the balance handle and leaves the certificate
-         *   stale (DD-016).
-         * - Reading an old close needs an archival RPC: a liveness dependency, not a safety one.
+         * Closing a token account (proposed, not at the pin): two candidate designs for recovering a
+         * token account's rent and its balance Store's rent. Both end in close_encrypted_store, which
+         * emits StoreClosed (read by F3-StoreClosed).
+         * - Proposed instructions: zama-host close_encrypted_store in both; the rest is named per view.
+         * - Any sender can replace the balance handle: confidential_transfer always writes the credited
+         *   output, even when nothing moves (programs/confidential-token/src/instructions/common.rs
+         *   L233-L247). A close that checks a handle across a KMS round trip therefore needs a guard.
          */
-        dynamic host "F3-StoreClosed" "Proposed flow: close an empty token account and its Store, then decrypt its history from the StoreClosed event." {
+
+        /*
+         * Option A, prove zero: a close primitive that accepts a KMS certificate that the current
+         * balance handle decrypts to 0. The account must already be empty.
+         * - Existing pieces: make_token_account_handle_public (programs/confidential-token/src/lib.rs
+         *   L116-L124) and verify_public_decrypt (DD-040), the analogue of Token-2022's EmptyAccount
+         *   zero-ciphertext proof.
+         * - Guard: disable_incoming_transfers (proposed flag that confidential_transfer checks), as
+         *   Token-2022's DisableConfidentialCredits does before EmptyAccount. Without it, a transfer
+         *   landing during the round trip leaves the certificate stale (DD-016).
+         */
+        dynamic host "F3a-Close-ProveZero" "Proposed option A: close an empty token account with a certificate that its balance is 0." {
             user -> host.tokenClient "Builds disable_incoming_transfers (proposed)"
             host.tokenClient -> cluster "Sends it and confirms it at finalized"
             cluster -> host.token "Sets the account's incoming-disabled flag: confidential_transfer now refuses credits to it"
-            user -> host.tokenClient "make_token_account_handle_public(Balance, current handle)"
+            user -> host.tokenClient "Builds make_token_account_handle_public(Balance, current handle)"
+            host.tokenClient -> cluster "Sends it and confirms it at finalized"
             user -> host.jsSdk "publicDecryptCertificate(balance handle)"
             host.jsSdk -> relayerHttp.router "Posts the public decryption"
             relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
@@ -490,7 +493,63 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is 0"
             host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
             cluster -> host.token "Closes the token account and returns its rent to the owner"
-            user -> host.jsSdk "Later: user-decrypts a historical handle from the closed Store"
+            autoLayout lr
+            properties {
+                "mermaid.sequenceDiagram" "true"
+            }
+        }
+
+        /*
+         * Option B, burn all then close: a close mode on the existing unshield path. Burning the
+         * balance slot itself leaves an encrypted 0 by construction, so only the burned amount needs
+         * the KMS.
+         * - Burning the whole balance is supported today: confidential_burn_from_value with the
+         *   balance slot as the amount (programs/confidential-token/src/instructions/confidential_burn.rs
+         *   L192-L200, aliasing note L421-L425); new_balance = balance - burned (L400-L403).
+         * - redeem_burned_amount verifies the certificate against PendingBurn.burned_handle and pays
+         *   the underlying (programs/confidential-token/src/instructions/redeem_burned_amount.rs
+         *   L138-L189).
+         * - Proposed: a close flag on the burn that marks the account Closing (transfers in and out
+         *   refused, so the zero stays the current handle), and a redeem that closes a Closing account.
+         *   cancel_pending_burn clears the flag.
+         */
+        dynamic host "F3b-Close-BurnAll" "Proposed option B: burn the whole balance, then redeem it and close the token account in one transaction." {
+            user -> host.tokenClient "Builds confidential_burn_from_value(Balance slot, close = true) (close flag proposed)"
+            user -> host.jsSdk "sendFheTransaction(instructions)"
+            host.jsSdk -> host.hostClient "Wraps the instruction in open_transient_store ... close_transient_store"
+            host.hostClient -> cluster "Sends the transaction and confirms it at finalized"
+            cluster -> host.token "confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): transfers in and out are refused"
+            host.token -> host.zamaFhe "Builds burned = the whole balance, so the new balance is balance - balance: an encrypted 0 by construction"
+            host.zamaFhe -> host.zamaHost "fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable"
+            user -> host.jsSdk "publicDecryptCertificate(burned handle)"
+            host.jsSdk -> relayerHttp.router "Posts the public decryption"
+            relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
+            kmsConnector.endpoint -> kmsConnector.kmsWorker "Queues the request"
+            kmsConnector.kmsWorker -> kmsCore "Checks the public leaf, then decrypts: n, the whole remaining balance"
+            user -> host.tokenClient "Builds redeem_burned_amount(burned handle, n, certificate) for the Closing account"
+            host.tokenClient -> cluster "Sends the transaction and confirms it at finalized"
+            cluster -> host.token "redeem_burned_amount: certificate handle equals PendingBurn.burned_handle"
+            host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is n"
+            host.token -> splToken "transfer_checked n: vault ATA to the owner's ATA"
+            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
+            cluster -> host.token "Closes PendingBurn and the token account (proposed), returns both rents to the owner"
+            autoLayout lr
+            properties {
+                "mermaid.sequenceDiagram" "true"
+            }
+        }
+
+        /*
+         * StoreClosed (proposed, not at the pin): the review's recommendation for keeping a closed
+         * Store's decrypt history verifiable. Either close above emits the Store's final MMR state as an
+         * event; the KMS reads that event when a later decryption names the closed Store.
+         * - Event CPI is Zama's convention (DD-044).
+         * - Today a missing Store fails decryption as EncryptedStoreFailure::Absent
+         *   (kms-connector/crates/kms-worker/src/core/solana/encrypted_store.rs L45-L75).
+         * - Reading an old close needs an archival RPC: a liveness dependency, not a safety one.
+         */
+        dynamic host "F3-StoreClosed" "Proposed flow: after F3a or F3b closed a Store, decrypt its history from the StoreClosed event." {
+            user -> host.jsSdk "User-decrypts a historical handle from a Store that F3a or F3b closed"
             host.jsSdk -> relayerHttp.router "Posts the user decryption"
             relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
             kmsConnector.endpoint -> kmsConnector.kmsWorker "Queues the request"

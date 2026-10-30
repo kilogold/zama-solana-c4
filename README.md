@@ -23,7 +23,9 @@ A C4 model of the Solana port of Zama FHEVM, from system landscape down to compo
 | `L3-js-sdk` | Component | The Solana client SDK |
 | `F1-Shielding` | Dynamic | Shield public USDC into a confidential balance, in one transaction |
 | `F2-Transfer` | Dynamic | Transfer an encrypted amount, after an off-chain input proof |
-| `F3-StoreClosed` | Dynamic | Proposed: close an empty token account and its Store, then decrypt its history from the `StoreClosed` event |
+| `F3a-Close-ProveZero` | Dynamic | Proposed option A: close an empty token account with a certificate that its balance is 0 |
+| `F3b-Close-BurnAll` | Dynamic | Proposed option B: burn the whole balance, then redeem it and close the account in one transaction |
+| `F3-StoreClosed` | Dynamic | Proposed: after F3a or F3b closed a Store, decrypt its history from the `StoreClosed` event |
 
 ## Working on it
 

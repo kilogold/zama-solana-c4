@@ -1,0 +1,37 @@
+%%{init: {"theme": "dark"}}%%
+sequenceDiagram
+  autonumber
+
+  actor 1 as dApp user<br />[Person]
+  participant 38 as @fhevm/confidential-token<br />[Container: TypeScript]
+  participant 28 as @fhevm/sdk/solana<br />[Container: TypeScript]
+  participant 37 as @fhevm/solana-zama-host<br />[Container: TypeScript]
+  participant 3 as Solana cluster<br />[Software System]
+  participant 16 as confidential-token<br />[Container: Anchor program]
+  participant 21 as zama-fhe<br />[Container: Rust crate]
+  participant 5 as zama-host<br />[Container: Anchor program]
+  participant 49 as Decryption router<br />[Container: Rust]
+  participant 51 as Endpoint<br />[Container: Rust]
+  participant 52 as kms-worker Solana pipeline<br />[Container: Rust]
+  participant 53 as KMS core<br />[Software System]
+  participant 54 as SPL Token programs<br />[Software System]
+
+  1->>38: Builds confidential_burn_from_value(Balance slot, close = true) (close flag proposed)
+  1->>28: sendFheTransaction(instructions)
+  28->>37: Wraps the instruction in open_transient_store ... close_transient_store
+  37->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
+  3->>16: confidential_burn_from_value: opens PendingBurn and marks the account Closing (proposed): transfers in and out are refused
+  16->>21: Builds burned = the whole balance, so the new balance is balance - balance: an encrypted 0 by construction
+  21->>5: fhe_execute by CPI: writes the balance and total supply, makes burned publicly decryptable
+  1->>28: publicDecryptCertificate(burned handle)
+  28->>49: Posts the public decryption<br />[HTTPS]
+  49->>51: Forwards to every connector<br />[HTTPS]
+  51->>52: Queues the request
+  52->>53: Checks the public leaf, then decrypts: n, the whole remaining balance
+  1->>38: Builds redeem_burned_amount(burned handle, n, certificate) for the Closing account
+  38->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
+  3->>16: redeem_burned_amount: certificate handle equals PendingBurn.burned_handle
+  16->>5: verify_public_decrypt by CPI: cleartext is n
+  16->>54: transfer_checked n: vault ATA to the owner's ATA
+  16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent
+  3->>16: Closes PendingBurn and the token account (proposed), returns both rents to the owner
