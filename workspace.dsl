@@ -411,6 +411,93 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             }
         }
 
+        /*
+         * Transfer: an off-chain input proof, then one transaction [open_transient_store,
+         * confidential_transfer, close_transient_store], as the demo-dapp composes it
+         * (demo-dapp/src/vault/actions/confidentialTransfer.ts L35-L117).
+         * - Input proof: sdk/js-sdk/src/solana/actions/submitInputProof.ts L34-L81; the relayer request
+         *   is a POST answered 202 and polled by GET (core/modules/relayer/module/RelayerAsyncRequest.ts).
+         * - Gateway: InputVerification.sol verifyProofRequestSolana L265, verifyProofResponseSolana L331;
+         *   the relayer completes on VerifyProofResponse (relayer/src/gateway/input_handlers.rs L258-L297).
+         * - confidential_transfer: programs/confidential-token/src/instructions/confidential_transfer.rs
+         *   L69-L81; the execution is instructions/common.rs L117-L337; the attestation binding is
+         *   common.rs L371-L390.
+         * - The host verifies the coprocessor signatures in the execution:
+         *   programs/zama-host/src/instructions/input_verification.rs L1-L9.
+         */
+        dynamic host "F2-Transfer" "Flow: transfer an encrypted amount between confidential balances, after an off-chain input proof." {
+            user -> host.jsSdk "encryptInput(amount as euint64), bound to the owner and confidential-token"
+            host.jsSdk -> relayer.inputRelay "submitInputProof: POST v2/input-proof, then polls by GET"
+            relayer.inputRelay -> gateway.inputVerification "verifyProofRequestSolana"
+            coprocessor.attestation -> gateway.inputVerification "Verifies the ZK proof and calls verifyProofResponseSolana with its signature"
+            gateway.inputVerification -> relayer.inputRelay "Emits VerifyProofResponse once the coprocessors reach consensus"
+            relayer.inputRelay -> host.jsSdk "Answers the poll with the handles and coprocessor signatures"
+            user -> host.tokenClient "Builds confidential_transfer(amount_attestation)"
+            user -> host.jsSdk "sendFheTransaction(instructions)"
+            host.jsSdk -> host.hostClient "Wraps the instruction in open_transient_store ... close_transient_store"
+            host.hostClient -> cluster "Sends the transaction, signed by owner and payer, and confirms it at finalized"
+            cluster -> host.zamaHost "open_transient_store"
+            cluster -> host.token "confidential_transfer: binds the attestation to owner and program, checks both underlying ATAs are not frozen"
+            host.token -> host.zamaFhe "Builds verified_input, then a debit capped at the balance and a credit of what moved"
+            host.zamaFhe -> host.zamaHost "fhe_execute by CPI: verifies the coprocessor signatures, writes both balances, appends MMR leaves, emits FheExecutedEvent"
+            cluster -> host.zamaHost "close_transient_store (must be last)"
+            {
+                {
+                    coprocessor.listener -> cluster "Reads the finalized block and rebuilds the execution"
+                    coprocessor.listener -> coprocessor.workers "Schedules the FHE operations"
+                }
+                {
+                    coprocessor.merkleService -> cluster "Indexes the new sender and recipient leaves"
+                }
+            }
+            autoLayout lr
+            properties {
+                "mermaid.sequenceDiagram" "true"
+            }
+        }
+
+        /*
+         * StoreClosed (proposed, not at the pin): the review's recommendation for recovering a token
+         * account's rent while keeping its decrypt history verifiable. Close an empty token account and
+         * its balance Store, emit the Store's final MMR state as an event, and let the KMS read that
+         * event when a later decryption names the closed Store.
+         * - Proposed instructions: confidential-token close_token_account and zama-host
+         *   close_encrypted_store. Neither exists at the pin.
+         * - Existing pieces: make_token_account_handle_public (programs/confidential-token/src/lib.rs
+         *   L116-L124) and verify_public_decrypt (DD-040) prove the balance is zero, the analogue of
+         *   Token-2022's EmptyAccount zero-ciphertext proof. Event CPI is Zama's convention (DD-044).
+         * - Today a missing Store fails decryption as EncryptedStoreFailure::Absent
+         *   (kms-connector/crates/kms-worker/src/core/solana/encrypted_store.rs L45-L75).
+         * - A transfer that lands between steps 1 and 7 changes the balance handle, so the close fails
+         *   on a stale handle and the owner retries (DD-016).
+         * - Reading an old close needs an archival RPC: a liveness dependency, not a safety one.
+         */
+        dynamic host "F3-StoreClosed" "Proposed flow: close an empty token account and its Store, then decrypt its history from the StoreClosed event." {
+            user -> host.tokenClient "make_token_account_handle_public(Balance, current handle)"
+            user -> host.jsSdk "publicDecryptCertificate(balance handle)"
+            host.jsSdk -> relayerHttp.router "Posts the public decryption"
+            relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
+            kmsConnector.endpoint -> kmsConnector.kmsWorker "Queues the request"
+            kmsConnector.kmsWorker -> kmsCore "Checks the public leaf, then decrypts: 0"
+            user -> host.tokenClient "Builds close_token_account(certificate) (proposed)"
+            host.tokenClient -> cluster "Sends the transaction and confirms it at finalized"
+            cluster -> host.token "close_token_account: no PendingBurn, certificate handle equals the current balance"
+            host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is 0"
+            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
+            cluster -> host.token "Closes the token account and returns its rent to the owner"
+            user -> host.jsSdk "Later: user-decrypts a historical handle from the closed Store"
+            host.jsSdk -> relayerHttp.router "Posts the user decryption"
+            relayerHttp.router -> kmsConnector.endpoint "Forwards to every connector"
+            kmsConnector.endpoint -> kmsConnector.kmsWorker "Queues the request"
+            kmsConnector.kmsWorker -> cluster "Store is absent: getSignaturesForAddress(store), then the finalized closing transaction (archival RPC)"
+            kmsConnector.kmsWorker -> coprocessor.merkleService "Fetches the allow leaf's MMR proof"
+            kmsConnector.kmsWorker -> kmsCore "Proof verified against the StoreClosed peaks: decrypts for the user"
+            autoLayout lr
+            properties {
+                "mermaid.sequenceDiagram" "true"
+            }
+        }
+
         styles {
             element "Element" {
                 color #ffffff

@@ -22,6 +22,8 @@ A C4 model of the Solana port of Zama FHEVM, from system landscape down to compo
 | `L3-Shared-crates` | Component | The shared crates and who compiles them in |
 | `L3-js-sdk` | Component | The Solana client SDK |
 | `F1-Shielding` | Dynamic | Shield public USDC into a confidential balance, in one transaction |
+| `F2-Transfer` | Dynamic | Transfer an encrypted amount, after an off-chain input proof |
+| `F3-StoreClosed` | Dynamic | Proposed: close an empty token account and its Store, then decrypt its history from the `StoreClosed` event |
 
 ## Working on it
 

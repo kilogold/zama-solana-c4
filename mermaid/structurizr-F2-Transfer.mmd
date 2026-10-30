@@ -1,0 +1,37 @@
+%%{init: {"theme": "dark"}}%%
+sequenceDiagram
+  autonumber
+
+  actor 1 as dApp user<br />[Person]
+  participant 28 as @fhevm/sdk/solana<br />[Container: TypeScript]
+  participant 47 as Solana input-proof handler<br />[Container: Rust]
+  participant 45 as InputVerification<br />[Container: Solidity]
+  participant 42 as Input attestation<br />[Container: Rust]
+  participant 38 as @fhevm/confidential-token<br />[Container: TypeScript]
+  participant 37 as @fhevm/solana-zama-host<br />[Container: TypeScript]
+  participant 3 as Solana cluster<br />[Software System]
+  participant 5 as zama-host<br />[Container: Anchor program]
+  participant 16 as confidential-token<br />[Container: Anchor program]
+  participant 21 as zama-fhe<br />[Container: Rust crate]
+  participant 40 as Solana host listener<br />[Container: Rust]
+  participant 41 as solana-merkle-proof-service<br />[Container: Rust]
+  participant 43 as FHE workers<br />[Container: Rust]
+
+  1->>28: encryptInput(amount as euint64), bound to the owner and confidential-token
+  28->>47: submitInputProof: POST v2/input-proof, then polls by GET<br />[HTTPS]
+  47->>45: verifyProofRequestSolana
+  42->>45: Verifies the ZK proof and calls verifyProofResponseSolana with its signature
+  45-->>47: Emits VerifyProofResponse once the coprocessors reach consensus
+  47-->>28: Answers the poll with the handles and coprocessor signatures<br />[HTTPS]
+  1->>38: Builds confidential_transfer(amount_attestation)
+  1->>28: sendFheTransaction(instructions)
+  28->>37: Wraps the instruction in open_transient_store ... close_transient_store
+  37->>3: Sends the transaction, signed by owner and payer, and confirms it at finalized<br />[JSON-RPC]
+  3->>5: open_transient_store
+  3->>16: confidential_transfer: binds the attestation to owner and program, checks both underlying ATAs are not frozen
+  16->>21: Builds verified_input, then a debit capped at the balance and a credit of what moved
+  21->>5: fhe_execute by CPI: verifies the coprocessor signatures, writes both balances, appends MMR leaves, emits FheExecutedEvent
+  3->>5: close_transient_store (must be last)
+  40->>3: Reads the finalized block and rebuilds the execution<br />[Yellowstone gRPC, JSON-RPC]
+  41->>3: Indexes the new sender and recipient leaves<br />[Yellowstone gRPC, JSON-RPC]
+  40->>43: Schedules the FHE operations
