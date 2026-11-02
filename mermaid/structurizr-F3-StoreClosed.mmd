@@ -17,4 +17,4 @@ sequenceDiagram
   51->>52: Queues the request
   52->>3: Store is absent: getSignaturesForAddress(store), then the finalized closing transaction (archival RPC)<br />[JSON-RPC]
   52->>41: Fetches the allow leaf's MMR proof<br />[HTTP, CBOR]
-  52->>53: Proof verified against the StoreClosed peaks: decrypts for the user
+  52->>53: Permit scope and any delegation checked against StoreClosed program and scope, proof verified against its peaks: decrypts for the user

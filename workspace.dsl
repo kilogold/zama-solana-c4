@@ -489,7 +489,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             host.tokenClient -> cluster "Sends the transaction and confirms it at finalized"
             cluster -> host.token "close_token_account: no PendingBurn, certificate handle equals the current balance"
             host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is 0"
-            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
+            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, program, scope, leaf_count, peaks }, returns the rent"
             cluster -> host.token "Closes the token account and returns its rent to the owner"
             autoLayout lr
             properties {
@@ -532,7 +532,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             cluster -> host.token "redeem_burned_amount: certificate handle equals PendingBurn.burned_handle, and the balance handle is still the recorded zero (proposed)"
             host.token -> host.zamaHost "verify_public_decrypt by CPI: cleartext is n"
             host.token -> splToken "transfer_checked n: vault ATA to the owner's ATA"
-            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent"
+            host.token -> host.zamaHost "close_encrypted_store by CPI (proposed): emits StoreClosed { store, program, scope, leaf_count, peaks }, returns the rent"
             cluster -> host.token "Closes PendingBurn and the token account (proposed), returns both rents to the owner"
             autoLayout lr
             properties {
@@ -556,7 +556,7 @@ workspace "Zama FHEVM on Solana" "C4 model of the Solana port at zama-ai/fhevm@5
             kmsConnector.endpoint -> kmsConnector.kmsWorker "Queues the request"
             kmsConnector.kmsWorker -> cluster "Store is absent: getSignaturesForAddress(store), then the finalized closing transaction (archival RPC)"
             kmsConnector.kmsWorker -> coprocessor.merkleService "Fetches the allow leaf's MMR proof"
-            kmsConnector.kmsWorker -> kmsCore "Proof verified against the StoreClosed peaks: decrypts for the user"
+            kmsConnector.kmsWorker -> kmsCore "Permit scope and any delegation checked against StoreClosed program and scope, proof verified against its peaks: decrypts for the user"
             autoLayout lr
             properties {
                 "mermaid.sequenceDiagram" "true"

@@ -25,5 +25,5 @@ sequenceDiagram
   38->>3: Sends the transaction and confirms it at finalized<br />[JSON-RPC]
   3->>16: close_token_account: no PendingBurn, certificate handle equals the current balance
   16->>5: verify_public_decrypt by CPI: cleartext is 0
-  16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent
+  16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, program, scope, leaf_count, peaks }, returns the rent
   3->>16: Closes the token account and returns its rent to the owner

@@ -33,5 +33,5 @@ sequenceDiagram
   3->>16: redeem_burned_amount: certificate handle equals PendingBurn.burned_handle, and the balance handle is still the recorded zero (proposed)
   16->>5: verify_public_decrypt by CPI: cleartext is n
   16->>54: transfer_checked n: vault ATA to the owner's ATA
-  16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, leaf_count, peaks }, returns the rent
+  16->>5: close_encrypted_store by CPI (proposed): emits StoreClosed { store, program, scope, leaf_count, peaks }, returns the rent
   3->>16: Closes PendingBurn and the token account (proposed), returns both rents to the owner
